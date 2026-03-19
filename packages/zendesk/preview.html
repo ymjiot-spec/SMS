@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zendesk Sidebar Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #e8e8e8;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .zendesk-frame {
+      width: 360px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    .zendesk-chrome {
+      background: #03363d;
+      color: #fff;
+      padding: 8px 12px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .zendesk-chrome .dot { width: 8px; height: 8px; border-radius: 50%; background: #78a300; }
+    .zendesk-chrome .title { font-weight: 600; }
+
+    /* Ticket header */
+    .ticket-header {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #f8f9fa;
+      font-size: 13px;
+    }
+    .ticket-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 2px 0;
+    }
+    .ticket-label { color: #666; flex-shrink: 0; margin-right: 8px; }
+    .ticket-value { font-weight: 600; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ticket-phone { font-weight: 600; font-family: monospace; text-align: right; }
+    .ticket-subject { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+
+    /* Form */
+    .form { padding: 12px; }
+    .field { margin-bottom: 10px; }
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-weight: 600;
+      font-size: 12px;
+      color: #555;
+    }
+    .char-count { font-weight: 400; color: #999; }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    .field input.error { border-color: #e53e3e; }
+    .field textarea { resize: vertical; }
+    .field .error-text { color: #e53e3e; font-size: 11px; margin-top: 2px; display: block; }
+
+    .send-btn {
+      width: 100%;
+      padding: 8px;
+      background: #1f73b7;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .send-btn:hover { background: #1a5f96; }
+    .send-btn:disabled { background: #b0b0b0; cursor: not-allowed; }
+
+    .result {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .result.success { background: #e6ffed; color: #1a7f37; border: 1px solid #a3d9a5; }
+    .result.error { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+
+    .preview-badge {
+      text-align: center;
+      padding: 6px;
+      background: #fff3cd;
+      color: #856404;
+      font-size: 11px;
+      border-top: 1px solid #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="zendesk-frame">
+    <!-- Zendesk chrome bar -->
+    <div class="zendesk-chrome">
+      <div class="dot"></div>
+      <span class="title">SMS送信ツール</span>
+    </div>
+
+    <!-- Ticket header -->
+    <div class="ticket-header">
+      <div class="ticket-row">
+        <span class="ticket-label">チケット</span>
+        <span class="ticket-value">#12345</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">件名</span>
+        <span class="ticket-subject">商品の配送状況について</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">依頼者</span>
+        <span class="ticket-value">田中 太郎</span>
+      </div>
+      <div class="ticket-row">
+        <span class="ticket-label">電話番号</span>
+        <span class="ticket-phone">09012345678</span>
+      </div>
+    </div>
+
+    <!-- SMS Form -->
+    <div class="form">
+      <div class="field">
+        <label for="phone">宛先番号</label>
+        <input id="phone" type="tel" value="09012345678" placeholder="09012345678" />
+        <span class="error-text" id="phone-error" style="display:none"></span>
+      </div>
+
+      <div class="field">
+        <label for="message">
+          メッセージ
+          <span class="char-count" id="char-count">0文字</span>
+        </label>
+        <textarea id="message" rows="4" placeholder="メッセージを入力..."></textarea>
+      </div>
+
+      <button class="send-btn" id="send-btn" disabled>SMS送信</button>
+
+      <div class="result" id="result" style="display:none"></div>
+    </div>
+
+    <div class="preview-badge">⚠ ローカルプレビューモード（ZAF SDK モック）</div>
+  </div>
+
+  <script>
+    const phoneInput = document.getElementById('phone');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('send-btn');
+    const charCount = document.getElementById('char-count');
+    const phoneError = document.getElementById('phone-error');
+    const resultDiv = document.getElementById('result');
+
+    function validatePhone(phone) {
+      return /^0[789]0\d{8}$/.test(phone);
+    }
+
+    function updateState() {
+      const phone = phoneInput.value.trim();
+      const msg = messageInput.value.trim();
+      charCount.textContent = messageInput.value.length + '文字';
+
+      if (phone && !validatePhone(phone)) {
+        phoneError.textContent = '070/080/090で始まる11桁の番号を入力';
+        phoneError.style.display = 'block';
+        phoneInput.classList.add('error');
+      } else {
+        phoneError.style.display = 'none';
+        phoneInput.classList.remove('error');
+      }
+
+      sendBtn.disabled = !(validatePhone(phone) && msg.length > 0);
+    }
+
+    phoneInput.addEventListener('input', updateState);
+    messageInput.addEventListener('input', updateState);
+
+    sendBtn.addEventListener('click', () => {
+      sendBtn.disabled = true;
+      sendBtn.textContent = '送信中...';
+      resultDiv.style.display = 'none';
+
+      // Simulate API call
+      setTimeout(() => {
+        const mockId = 'mock-' + Date.now();
+        resultDiv.className = 'result success';
+        resultDiv.textContent = '送信成功 (ID: ' + mockId + ')';
+        resultDiv.style.display = 'block';
+        sendBtn.textContent = 'SMS送信';
+        messageInput.value = '';
+        updateState();
+      }, 1200);
+    });
+
+    updateState();
+  </script>
+</body>
+</html>

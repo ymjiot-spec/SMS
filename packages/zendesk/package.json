@@ -1,0 +1,29 @@
+{
+  "name": "@zendesk-sms-tool/zendesk",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "vite build && cp manifest.json dist/",
+    "dev": "vite",
+    "package": "npm run build && cd dist && zip -r ../sms-tool.zip .",
+    "lint": "eslint src/",
+    "test": "vitest --run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@zendesk-sms-tool/shared": "*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^5.1.4",
+    "fast-check": "^4.0.0",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.7.0",
+    "vite": "^7.3.1",
+    "vitest": "^3.0.0"
+  }
+}

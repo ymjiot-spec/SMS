@@ -1,0 +1,9 @@
+
+> @zendesk-sms-tool/backend@0.0.1 dev
+> tsx watch server.ts
+
+
+🚀 Backend server running on http://localhost:3001
+   Provider: MockProvider
+   CORS: enabled
+

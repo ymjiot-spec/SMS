@@ -1,0 +1,159 @@
+// packages/backend/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OPERATOR
+  SUPERVISOR
+  SYSTEM_ADMIN
+}
+
+enum SendType {
+  CUSTOMER
+  SELF_COPY
+  TEST
+}
+
+enum DeliveryStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  FAILED
+  EXPIRED
+  UNKNOWN
+}
+
+enum AuditAction {
+  SMS_SEND
+  SMS_SEND_FAILED
+  TEMPLATE_CREATE
+  TEMPLATE_UPDATE
+  TEMPLATE_DELETE
+  PERMISSION_DENIED
+  CONFIG_CHANGE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  phone     String?
+  role      UserRole @default(OPERATOR)
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  smsLogs   SmsLog[]
+  auditLogs AuditLog[]
+  favorites TemplateFavorite[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Company {
+  id        String     @id @default(cuid())
+  name      String
+  code      String     @unique
+  users     User[]
+  templates Template[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("companies")
+}
+
+model Template {
+  id         String             @id @default(cuid())
+  name       String
+  body       String
+  companyId  String?
+  company    Company?           @relation(fields: [companyId], references: [id])
+  brand      String?
+  purpose    String?
+  department String?
+  visibility String             @default("company")
+  createdBy  String
+  lastUsedAt DateTime?
+  smsLogs    SmsLog[]
+  favorites  TemplateFavorite[]
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([companyId, purpose])
+  @@index([name])
+  @@map("templates")
+}
+
+model TemplateFavorite {
+  id         String   @id @default(cuid())
+  userId     String
+  templateId String
+  user       User     @relation(fields: [userId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, templateId])
+  @@map("template_favorites")
+}
+
+model SmsLog {
+  id                String          @id @default(cuid())
+  operatorId        String
+  operator          User            @relation(fields: [operatorId], references: [id])
+  recipientPhone    String
+  messageBody       String
+  templateId        String?
+  template          Template?       @relation(fields: [templateId], references: [id])
+  ticketId          String?
+  sendType          SendType
+  externalMessageId String?
+  deliveryStatus    DeliveryStatus  @default(QUEUED)
+  resultMessage     String?
+  deliveryEvents    DeliveryEvent[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([ticketId])
+  @@index([recipientPhone])
+  @@index([operatorId])
+  @@index([createdAt])
+  @@index([deliveryStatus])
+  @@map("sms_logs")
+}
+
+model DeliveryEvent {
+  id         String         @id @default(cuid())
+  smsLogId   String
+  smsLog     SmsLog         @relation(fields: [smsLogId], references: [id])
+  status     DeliveryStatus
+  rawPayload Json?
+  source     String
+  createdAt  DateTime       @default(now())
+
+  @@index([smsLogId])
+  @@map("delivery_events")
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  action       AuditAction
+  resourceType String
+  resourceId   String?
+  details      Json
+  ipAddress    String?
+  createdAt    DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
