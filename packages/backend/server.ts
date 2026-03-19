@@ -284,7 +284,7 @@ const folders: Array<{
 
 const favoritesByUser = new Map<string, Set<string>>();
 app.post('/api/templates/:id/favorite', (req: Request, res: Response) => {
-  const id = req.params.id;
+  const id = req.params.id as string;
   const userId = req.user!.id;
   if (!templates.find(t => t.id === id)) return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'テンプレートが見つかりません' } });
   if (!favoritesByUser.has(userId)) favoritesByUser.set(userId, new Set());

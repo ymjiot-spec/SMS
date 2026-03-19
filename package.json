@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "build:render": "npm run --workspace=packages/shared build && npx tsc -p packages/backend/tsconfig.server.json",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
