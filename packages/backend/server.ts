@@ -392,7 +392,7 @@ app.get('/api/users/me', (req: Request, res: Response) => {
   res.json(req.user);
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 Backend server running on http://localhost:${PORT}`);
   console.log(`   Provider: ${USE_REAL_SMS ? 'MediaSMS (実API)' : 'MockProvider'}`);
   console.log(`   CORS: enabled\n`);
