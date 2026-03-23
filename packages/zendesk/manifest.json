@@ -9,7 +9,7 @@
   "location": {
     "support": {
       "ticket_sidebar": {
-        "url": "https://sms-m7ei.onrender.com/zendesk/index.html",
+        "url": "assets/loader.html",
         "flexible": true
       }
     }

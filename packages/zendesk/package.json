@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "build": "vite build && cp manifest.json dist/",
+    "build": "vite build && cp manifest.json dist/ && cp loader.html dist/assets/loader.html",
     "dev": "vite",
     "package": "npm run build && cd dist && zip -r ../sms-tool.zip .",
     "lint": "eslint src/",
