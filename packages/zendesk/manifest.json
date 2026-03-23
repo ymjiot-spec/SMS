@@ -9,7 +9,7 @@
   "location": {
     "support": {
       "ticket_sidebar": {
-        "url": "http://localhost:4000/",
+        "url": "https://sms-m7ei.onrender.com/zendesk/index.html",
         "flexible": true
       }
     }

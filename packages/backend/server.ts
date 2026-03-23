@@ -4,6 +4,7 @@
  */
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import type { Request, Response, NextFunction } from 'express';
 import { Media4uProvider } from './src/providers/media4u-provider.js';
 import { MockProvider } from './src/providers/mock-provider.js';
@@ -53,6 +54,11 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
+
+// Zendesk フロントエンド静的ファイル配信
+// Renderビルド時に zendesk も一緒にビルドされる
+// dist-server/ から見て ../../zendesk/dist/assets/ にビルド結果がある
+app.use('/zendesk', express.static(path.resolve(__dirname, '..', '..', 'zendesk', 'dist', 'assets')));
 
 // --- SMS Send ---
 app.post('/api/sms/send', async (req: Request, res: Response) => {
