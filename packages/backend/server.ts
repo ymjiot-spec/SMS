@@ -28,7 +28,12 @@ const provider = USE_REAL_SMS
   : new MockProvider();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-User-Id'],
+}));
 app.use(express.json());
 
 // In-memory logs (field names match SmsLogEntry type in api-client.ts)

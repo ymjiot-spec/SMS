@@ -8,7 +8,7 @@ import { initZafClient, getTicketInfo } from './lib/zaf-client';
 import type { TicketInfo } from './lib/zaf-client';
 import './styles.css';
 
-const API = import.meta.env.VITE_API_URL ?? 'https://sms-2ftz.onrender.com';
+const API = import.meta.env.VITE_API_URL ?? 'https://sms-m7ei.onrender.com';
 type Tab = 'send' | 'templates' | 'history';
 
 // ── Types ───────────────────────────────────────

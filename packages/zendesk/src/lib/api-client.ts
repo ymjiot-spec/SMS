@@ -39,7 +39,7 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://sms-2ftz.onrender.com';
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'https://sms-m7ei.onrender.com';
 
 let currentUserId = '';
 
