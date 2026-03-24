@@ -18,8 +18,5 @@
   "frameworkVersion": "2.0",
   "singleInstall": true,
   "signedUrls": false,
-  "icons": {
-    "svg": "assets/logo-small.svg"
-  },
   "parameters": []
 }

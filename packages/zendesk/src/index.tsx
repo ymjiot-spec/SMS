@@ -430,8 +430,9 @@ const HistoryTab: React.FC<{ logs: Log[] }> = ({ logs }) => {
 
   const downloadCsv = () => {
     const hdr = '日時,宛先,種別,ステータス,テンプレート,送信者,本文';
+    const sendTypeLabel = (t: string) => t === 'test' ? 'テスト' : t === 'self_copy' ? '自分' : '本番';
     const rows = filtered.map(l =>
-      `"${new Date(l.createdAt).toLocaleString('ja-JP')}","${l.recipientPhone}","${l.sendType === 'test' ? 'テスト' : '本番'}","${l.success ? '成功' : '失敗'}","${l.templateName ?? ''}","${l.sentBy}","${l.messageBody.replace(/"/g, '""').replace(/\n/g, ' ')}"`
+      `"${new Date(l.createdAt).toLocaleString('ja-JP')}","${l.recipientPhone}","${sendTypeLabel(l.sendType)}","${l.success ? '成功' : '失敗'}","${l.templateName ?? ''}","${l.sentBy}","${l.messageBody.replace(/"/g, '""').replace(/\n/g, ' ')}"`
     );
     const a = Object.assign(document.createElement('a'), {
       href: URL.createObjectURL(new Blob(['\uFEFF' + [hdr, ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' })),
@@ -475,8 +476,8 @@ const HistoryTab: React.FC<{ logs: Log[] }> = ({ logs }) => {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontFamily: 'monospace', fontSize: 13, fontWeight: 700, color: C.text }}>{log.recipientPhone}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 10, background: log.sendType === 'test' ? '#fef3c7' : '#dbeafe', color: log.sendType === 'test' ? '#92400e' : '#1e40af' }}>
-                {log.sendType === 'test' ? 'テスト' : '本番'}
+              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 10, background: log.sendType === 'test' ? '#fef3c7' : log.sendType === 'self_copy' ? '#f3e8ff' : '#dbeafe', color: log.sendType === 'test' ? '#92400e' : log.sendType === 'self_copy' ? '#7c3aed' : '#1e40af' }}>
+                {log.sendType === 'test' ? 'テスト' : log.sendType === 'self_copy' ? '自分' : '本番'}
               </span>
               <span style={{ fontSize: 10, fontWeight: 700, color: log.success ? C.success : C.danger, marginLeft: 'auto', flexShrink: 0 }}>
                 {log.success ? '✓ 成功' : '✗ 失敗'}
