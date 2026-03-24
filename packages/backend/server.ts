@@ -94,7 +94,7 @@ app.post('/api/sms/send', async (req: Request, res: Response) => {
     smsLogs.unshift({
       ...logEntry,
       id: `log_${Date.now()}_self`,
-      recipientPhone: selfTarget,
+      recipientPhone: to,
       sendType: 'self_copy',
       success: selfResult.success,
       externalMessageId: selfResult.externalMessageId,
