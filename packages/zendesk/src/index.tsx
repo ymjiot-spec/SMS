@@ -205,6 +205,14 @@ const TemplatesTab: React.FC<{
   const [editTpl, setEditTpl] = useState<Template | null>(null);
   const [delTpl, setDelTpl] = useState<Template | null>(null);
   const [defaultFolderId, setDefaultFolderId] = useState<string | null>(null);
+  const [dragTplId, setDragTplId] = useState<string | null>(null);
+  const [dropFolderId, setDropFolderId] = useState<string | null>(null);
+
+  const moveTplToFolder = async (tplId: string, folderId: string) => {
+    await fetch(`${API}/api/templates/${tplId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ folderId }) });
+    onRefresh();
+    setOpenFolders(prev => new Set([...prev, folderId]));
+  };
 
   const toggle = (id: string) => setOpenFolders(prev => {
     const n = new Set(prev);
@@ -252,11 +260,15 @@ const TemplatesTab: React.FC<{
     setDelTpl(null); onRefresh();
   };
 
-  const TplRow: React.FC<{ t: Template }> = ({ t }) => (
-    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', borderBottom: `1px solid ${C.border}`, cursor: 'pointer', transition: 'background .12s' }}
+  const TplRow: React.FC<{ t: Template; draggable?: boolean }> = ({ t, draggable }) => (
+    <div style={{ display: 'flex', alignItems: 'center', padding: '8px 14px', borderBottom: `1px solid ${C.border}`, cursor: draggable ? 'grab' : 'pointer', transition: 'background .12s', opacity: dragTplId === t.id ? 0.4 : 1 }}
+      draggable={draggable}
+      onDragStart={e => { if (draggable) { setDragTplId(t.id); e.dataTransfer.effectAllowed = 'move'; } }}
+      onDragEnd={() => setDragTplId(null)}
       onClick={() => onSelect(t)}
       onMouseEnter={e => (e.currentTarget.style.background = '#f5f3ff')}
       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+      {draggable && <span style={{ fontSize: 10, color: '#d1d5db', marginRight: 6, cursor: 'grab' }}>⠿</span>}
       <span style={{ flex: 1, fontSize: 13, color: C.text, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', paddingRight: 8 }}>{t.name}</span>
       <span onClick={e => { e.stopPropagation(); setEditTpl(t); setShowTplForm(true); }}
         style={{ fontSize: 12, color: C.sub, padding: '2px 6px', cursor: 'pointer', borderRadius: 4 }}
@@ -317,8 +329,11 @@ const TemplatesTab: React.FC<{
                   return (
                     <div key={folder.id} style={{ marginBottom: 2 }}>
                       {/* Folder header */}
-                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', userSelect: 'none' }}
-                        onClick={() => toggle(folder.id)}>
+                      <div style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', cursor: 'pointer', userSelect: 'none', borderRadius: 6, border: dropFolderId === folder.id ? `2px dashed ${C.accent}` : '2px solid transparent', background: dropFolderId === folder.id ? '#eef2ff' : 'transparent', transition: 'all .15s' }}
+                        onClick={() => toggle(folder.id)}
+                        onDragOver={e => { if (dragTplId) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDropFolderId(folder.id); } }}
+                        onDragLeave={() => setDropFolderId(null)}
+                        onDrop={e => { e.preventDefault(); if (dragTplId) { moveTplToFolder(dragTplId, folder.id); setDragTplId(null); setDropFolderId(null); } }}>
                         <span style={{ fontSize: 12, color: C.sub, marginRight: 6, transition: 'transform .15s', display: 'inline-block', transform: isOpen ? 'rotate(90deg)' : 'rotate(0)' }}>▶</span>
                         <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: C.text }}>{folder.name}</span>
                         <span style={{ fontSize: 11, color: C.sub, marginRight: 8 }}>{tpls.length}件</span>
@@ -354,7 +369,7 @@ const TemplatesTab: React.FC<{
                       <span style={{ fontSize: 11, fontWeight: 600, color: C.sub, textTransform: 'uppercase', letterSpacing: '.5px' }}>フォルダなし</span>
                     </div>
                     <div style={{ margin: '0 16px', background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, overflow: 'hidden' }}>
-                      {templates.filter(t => !t.folderId).map(t => <TplRow key={t.id} t={t} />)}
+                      {templates.filter(t => !t.folderId).map(t => <TplRow key={t.id} t={t} draggable />)}
                     </div>
                   </div>
                 )}
